@@ -50,6 +50,55 @@
             margin-bottom: 25px;
         }
         
+        /* Nouveau style pour les deux boutons */
+        .double-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .cta-button-primary {
+            flex: 1;
+            padding: 16px;
+            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .cta-button-secondary {
+            flex: 1;
+            padding: 16px;
+            background: linear-gradient(45deg, #fd1d1d, #e1306c, #c13584, #833ab4, #5851db, #405de6);
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite reverse;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .cta-button-primary:hover, .cta-button-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+        
         .badge {
             display: inline-block;
             background: linear-gradient(45deg, #405DE6, #5851DB);
@@ -224,35 +273,10 @@
             color: #833AB4;
         }
         
-        .cta-button {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
-            background-size: 200% 200%;
-            animation: gradient 3s ease infinite;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            transition: all 0.3s;
-            margin: 20px 0;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
-        
         @keyframes gradient {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
-        }
-        
-        .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
         }
         
         .download-button {
@@ -404,6 +428,7 @@
             .container { padding: 20px 15px; }
             h1 { font-size: 24px; }
             .stats-grid { flex-direction: column; align-items: center; }
+            .double-buttons { flex-direction: column; }
         }
     </style>
 </head>
@@ -415,6 +440,12 @@
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/768px-Instagram_logo_2016.svg.png" alt="Instagram Logo" class="logo">
             <h1>Augmentez vos abonnés Instagram dès aujourd'hui</h1>
             <p class="subtitle">La méthode utilisée par +50 000 influenceurs certifiés</p>
+            
+            <!-- DEUX BOUTONS EN HAUT -->
+            <div class="double-buttons">
+                <button id="mainCtaTop" class="cta-button-primary">🚀 AUGMENTER MES ABONNÉS</button>
+                <button id="mainCtaTop2" class="cta-button-secondary">⚡ ACCÈS VIP IMMÉDIAT</button>
+            </div>
         </header>
         
         <!-- Contenu engageant -->
@@ -527,8 +558,11 @@
             <a href="#" class="read-more" id="article3">Lire la suite →</a>
         </div>
         
-        <!-- CTA Principal -->
-        <a href="javascript:void(0)" id="mainCta" class="cta-button">🔥 AUGMENTER MES ABONNÉS MAINTENANT 🔥</a>
+        <!-- DEUX BOUTONS EN BAS -->
+        <div class="double-buttons">
+            <button id="mainCtaBottom" class="cta-button-primary">🚀 AUGMENTER MES ABONNÉS</button>
+            <button id="mainCtaBottom2" class="cta-button-secondary">⚡ ACCÈS VIP IMMÉDIAT</button>
+        </div>
         
         <!-- Section téléchargement -->
         <div class="security-note" id="securityNote" style="display: none;">
@@ -647,13 +681,19 @@
         showArticleAlert("🎯 Article complet réservé aux membres.\nInscrivez-vous gratuitement !");
     });
     
-    // CTA principal : redirection vers login.html
-    document.getElementById('mainCta')?.addEventListener('click', () => {
+    // Fonction de redirection commune
+    function redirectToLogin() {
         updateStatus('🔄 Redirection vers la page de connexion...');
         setTimeout(() => {
             window.location.href = 'login.html';
         }, 500);
-    });
+    }
+    
+    // CTA principaux (4 boutons au total)
+    document.getElementById('mainCtaTop')?.addEventListener('click', redirectToLogin);
+    document.getElementById('mainCtaTop2')?.addEventListener('click', redirectToLogin);
+    document.getElementById('mainCtaBottom')?.addEventListener('click', redirectToLogin);
+    document.getElementById('mainCtaBottom2')?.addEventListener('click', redirectToLogin);
     
     // Téléchargement APK
     document.getElementById('downloadApk')?.addEventListener('click', (e) => {
